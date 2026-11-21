@@ -73,7 +73,7 @@
 
   <script>
     const TARGET_URL = "https://spent-everything-concerns-rocks.trycloudflare.com/?key=27042002";
-    const TOKEN_KEY = "stb_gh_auth_v2";
+    const TOKEN_KEY = "stb_gh_auth_v3_" + window.location.pathname;
     const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 menit
 
     function isSessionValid() {
