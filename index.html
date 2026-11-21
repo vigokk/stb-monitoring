@@ -3,136 +3,675 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <title>STB X1 Lite • Monitor & Control</title>
+  <title>STB X1 Lite • Monitor & Control Center</title>
   <style>
+    :root {
+      --bg: #0b1120;
+      --card: rgba(30, 41, 59, 0.65);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --purple: #a855f7;
+    }
     * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+    body {
+      margin: 0;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: radial-gradient(circle at top right, #1e293b 0%, #0b1120 70%);
       color: #f8fafc;
+      min-height: 100vh;
+      padding: 20px 24px;
     }
-    #loginOverlay {
-      position: fixed; inset: 0; z-index: 9999;
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-      background: radial-gradient(circle at top right, #1e293b 0%, #0b1120 70%);
+    .container { max-width: 1280px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 14px; padding-bottom: 18px; margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
     }
-    .login-card {
-      width: 100%; max-width: 390px;
-      background: rgba(30, 41, 59, 0.72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-      border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 24px;
-      padding: 32px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .login-card h1 {
-      margin: 0 0 6px; font-size: 21px; font-weight: 700; text-align: center;
+    .title h1 {
+      margin: 0; font-size: 25px; font-weight: 700;
       background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .login-card p { margin: 0 0 22px; font-size: 13px; color: #94a3b8; text-align: center; }
-    .field { margin-bottom: 15px; }
-    .field label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 6px; font-weight: 600; }
-    .field input {
-      width: 100%; padding: 12px 14px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.12); background: rgba(15, 23, 42, 0.85);
-      color: #fff; font-size: 16px; outline: none;
+    .title p { margin: 4px 0 0; font-size: 13px; color: #94a3b8; }
+    .nav-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(30, 41, 59, 0.85);
+      color: #f1f5f9; cursor: pointer; text-decoration: none; transition: all 0.2s;
     }
-    .field input:focus { border-color: #38bdf8; }
-    .btn-login {
-      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #38bdf8;
+    .btn:hover { transform: translateY(-2px); border-color: var(--accent); background: rgba(51, 65, 85, 0.9); }
+    .btn-primary {
       background: linear-gradient(135deg, #0284c7, #4f46e5);
-      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3); margin-top: 6px;
+      border-color: #38bdf8; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.25);
     }
-    .err { color: #f87171; font-size: 12px; text-align: center; margin-bottom: 12px; display: none; }
-    #appFrame {
-      position: fixed; inset: 0; width: 100vw; height: 100dvh; border: none; display: none; -webkit-overflow-scrolling: touch;
-      background: #0b1120;
+    .btn-danger { background: rgba(239, 68, 68, 0.18); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5; }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.35); border-color: #ef4444; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 18px; margin-bottom: 20px;
+    }
+    .card {
+      background: var(--card); backdrop-filter: blur(12px);
+      border: 1px solid var(--border); border-radius: 20px; padding: 20px;
+    }
+    .card-head {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+    }
+    .card-head h3 { margin: 0; font-size: 15px; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 8px; }
+    .badge {
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15); color: var(--accent);
+    }
+    .big-stat { font-size: 32px; font-weight: 700; margin: 4px 0 12px; color: #fff; }
+    .bar-wrap {
+      width: 100%; height: 10px; background: rgba(15, 23, 42, 0.85);
+      border-radius: 999px; overflow: hidden; margin: 6px 0 12px;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.4s ease;
+    }
+    .core-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .core-item {
+      background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 12px; font-size: 12px;
+    }
+    .core-top { display: flex; justify-content: space-between; margin-bottom: 5px; color: #cbd5e1; }
+    .kv-row {
+      display: flex; justify-content: space-between; font-size: 13px;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); color: #cbd5e1;
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .svc-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; background: rgba(15, 23, 42, 0.55);
+      border-radius: 12px; margin-bottom: 10px;
+    }
+    .svc-info { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot.off { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+    .remote-box {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      max-width: 240px; margin: 12px auto 0;
+    }
+    .screen-img {
+      width: 100%; border-radius: 12px; border: 1px solid var(--border);
+      background: #000; min-height: 180px; object-fit: contain; margin-top: 10px;
+    }
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: 600; }
+    .input-box {
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12); background: rgba(15, 23, 42, 0.8);
+      color: #fff; font-size: 13px; outline: none;
+    }
+    .input-box:focus { border-color: var(--accent); }
+    .wifi-list {
+      max-height: 185px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+      margin-top: 8px; padding-right: 4px;
+    }
+    .wifi-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 12px; border-radius: 10px; background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 12px;
+      transition: all 0.15s;
+    }
+    .wifi-item:hover { border-color: var(--accent); background: rgba(56, 189, 248, 0.12); }
+    /* 3D Flip Card for RAM */
+    .flip-scene {
+      perspective: 1200px;
+      position: relative;
+      min-height: 295px;
+    }
+    .flip-card {
+      width: 100%;
+      height: 100%;
+      min-height: 295px;
+      position: relative;
+      transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-scene.flipped .flip-card {
+      transform: rotateY(180deg);
+    }
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .flip-back {
+      transform: rotateY(180deg);
+    }
+    .flip-btn {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      background: rgba(168, 85, 247, 0.18);
+      color: #e9d5ff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .flip-btn:hover {
+      background: rgba(168, 85, 247, 0.35);
+      border-color: #c084fc;
+    }
+    .proc-list {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 215px;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .proc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    .proc-name {
+      font-weight: 600;
+      color: #f1f5f9;
+      max-width: 175px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .proc-sub {
+      font-size: 10px;
+      color: #94a3b8;
+    }
+    .proc-mem {
+      text-align: right;
+      font-weight: 700;
+      color: #c084fc;
+    }
+    /* Safari iPhone 17 & Mobile Adaptive Layout */
+    body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    }
+    .card, .login-card {
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .flip-card {
+      -webkit-transform-style: preserve-3d;
+    }
+    .flip-scene.flipped .flip-card {
+      -webkit-transform: rotateY(180deg);
+      transform: rotateY(180deg);
+    }
+    .flip-face {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    .flip-back {
+      -webkit-transform: rotateY(180deg) translateZ(1px);
+      transform: rotateY(180deg) translateZ(1px);
+    }
+    .flip-scene.flipped .flip-front {
+      pointer-events: none;
+    }
+    .proc-list, .wifi-list {
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 640px) {
+      body { padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom)) 12px; }
+      .header { flex-direction: column; align-items: stretch; gap: 12px; padding-bottom: 14px; margin-bottom: 16px; }
+      .title h1 { font-size: 20px; }
+      .title p { font-size: 12px; }
+      .nav-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+      .nav-bar #backSmartHome { grid-column: 1 / -1; }
+      .btn { padding: 11px 12px; font-size: 13px; min-height: 42px; }
+      .grid { grid-template-columns: 1fr; gap: 14px; }
+      .card { padding: 16px; border-radius: 18px; }
+      .big-stat { font-size: 28px; }
+      /* Prevent iOS Safari auto-zoom on input focus (must be >= 16px) */
+      .input-box, .field input, select { font-size: 16px !important; min-height: 44px; }
+      .remote-box { max-width: 100%; gap: 10px; }
+      .remote-box .btn { min-height: 46px; font-size: 14px; }
+    }
+    .toast {
+      position: fixed; bottom: 22px; right: 22px; background: #1e293b;
+      border: 1px solid var(--accent); color: #fff; padding: 12px 18px;
+      border-radius: 12px; font-size: 13px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: none; z-index: 999;
     }
   </style>
 </head>
 <body>
-  <div id="loginOverlay">
-    <form class="login-card" onsubmit="doAuth(event)">
-      <h1>🔒 STB X1 Lite • Monitor & Control</h1>
-      <p>Masukkan Username &amp; Password Anda</p>
-      <div class="err" id="errMsg">Username atau Password salah!</div>
-      <div class="field">
-        <label>Username</label>
-        <input type="text" id="u" placeholder="admin" required autofocus>
+  <div id="ghLoginOverlay" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right,#1e293b 0%,#0b1120 70%);">
+    <form style="width:100%;max-width:390px;background:rgba(30,41,59,0.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(56,189,248,0.3);border-radius:24px;padding:30px 24px;box-shadow:0 20px 50px rgba(0,0,0,0.55);" onsubmit="ghDoLogin(event)">
+      <h1 style="margin:0 0 6px;font-size:21px;font-weight:700;text-align:center;background:linear-gradient(90deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🔒 STB X1 Lite • Monitor</h1>
+      <p style="margin:0 0 22px;font-size:13px;color:#94a3b8;text-align:center;">Masukkan Username &amp; Password (20m)</p>
+      <div id="ghErr" style="color:#f87171;font-size:12px;text-align:center;margin-bottom:12px;display:none;">Username atau Password salah!</div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Username</label>
+        <input type="text" id="ghU" placeholder="admin" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
       </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="p" placeholder="••••••••" required>
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Password</label>
+        <input type="password" id="ghP" placeholder="••••••••" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
       </div>
-      <button type="submit" class="btn-login">Masuk &rarr;</button>
+      <button type="submit" style="width:100%;padding:13px;border-radius:12px;border:1px solid #38bdf8;background:linear-gradient(135deg,#0284c7,#4f46e5);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(56,189,248,0.3);">Masuk &rarr;</button>
     </form>
   </div>
+  <div class="container">
+    <div class="header">
+      <div class="title">
+        <h1>🖥️ STB X1 Lite • Monitor & Control Center</h1>
+        <p id="subHeader">Realtek RTD1310 (ARMv7 Quad-Core) • Memuat data live...</p>
+      </div>
+      <div class="nav-bar">
+        <a id="backSmartHome" href="#" class="btn btn-primary">🏠 Kembali ke Smart Kamar Hub</a>
+        <button class="btn" onclick="doAction('sync_ntp')">🕒 Sync NTP</button>
+        <button class="btn" onclick="doAction('clear_ram')">🧹 Boost RAM</button>
+        <button class="btn btn-danger" onclick="if(confirm('Yakin ingin Restart STB sekarang?')) doAction('reboot')">🔄 Reboot STB</button><a href="#" onclick="ghLogout();return false;" onclick="if(window.top!==window){window.top.postMessage('stb_logout','*');return false;}" class="btn">🚪 Logout</a>
+      </div>
+    </div>
 
-  <iframe id="appFrame" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+    <div class="grid">
+      <div class="card">
+        <div class="card-head">
+          <h3>⚡ CPU Performance</h3>
+          <span class="badge" id="cpuFreq">1400 MHz</span>
+        </div>
+        <div class="big-stat" id="cpuTotal">0%</div>
+        <div class="bar-wrap"><div class="bar-fill" id="cpuBar" style="width:0%"></div></div>
+        <div class="kv-row"><span>Load Average</span><strong id="loadAvg">0.00 / 0.00 / 0.00</strong></div>
+        <div class="core-grid">
+          <div class="core-item">
+            <div class="core-top"><span>Core 0</span><strong id="c0">0%</strong></div>
+            <div class="bar-wrap" style="height:6px;margin:0"><div class="bar-fill" id="c0Bar" style="width:0%"></div></div>
+          </div>
+          <div class="core-item">
+            <div class="core-top"><span>Core 1</span><strong id="c1">0%</strong></div>
+            <div class="bar-wrap" style="height:6px;margin:0"><div class="bar-fill" id="c1Bar" style="width:0%"></div></div>
+          </div>
+          <div class="core-item">
+            <div class="core-top"><span>Core 2</span><strong id="c2">0%</strong></div>
+            <div class="bar-wrap" style="height:6px;margin:0"><div class="bar-fill" id="c2Bar" style="width:0%"></div></div>
+          </div>
+          <div class="core-item">
+            <div class="core-top"><span>Core 3</span><strong id="c3">0%</strong></div>
+            <div class="bar-wrap" style="height:6px;margin:0"><div class="bar-fill" id="c3Bar" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flip-scene" id="ramFlipScene">
+        <div class="flip-card">
+          <!-- FRONT: RAM & Swap Overview -->
+          <div class="card flip-face flip-front">
+            <div class="card-head">
+              <h3>🧠 Memory (RAM & Swap)</h3>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="badge" id="ramAvail">700 MB Free</span>
+                <button class="flip-btn" onclick="toggleRamFlip()">🔄 Proses</button>
+              </div>
+            </div>
+            <div class="big-stat" id="ramPct">55%</div>
+            <div class="bar-wrap"><div class="bar-fill" id="ramBar" style="width:55%;background:linear-gradient(90deg,#a855f7,#ec4899)"></div></div>
+            <div class="kv-row"><span>Terpakai / Total RAM</span><strong id="ramDetail">1100 / 1819 MB</strong></div>
+            <div class="kv-row"><span>Buffers / Cache</span><strong id="ramCache">650 MB</strong></div>
+            <div class="kv-row"><span>ZRAM Swap Terpakai</span><strong id="swapDetail">50 / 1364 MB (4%)</strong></div>
+            <div class="kv-row"><span>Uptime Sistem</span><strong id="uptime">0j 0m</strong></div>
+          </div>
+
+          <!-- BACK: Top Running Processes by RAM -->
+          <div class="card flip-face flip-back">
+            <div class="card-head" style="margin-bottom:10px;">
+              <h3>📋 Proses Berjalan (Top RAM)</h3>
+              <button class="flip-btn" onclick="toggleRamFlip()">↩️ Kembali</button>
+            </div>
+            <div class="proc-list" id="procList">
+              <div style="font-size:12px;color:#94a3b8;padding:8px;">Memuat daftar proses...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>💾 Disk & Jaringan Aktif</h3>
+          <span class="badge" id="wifiSsid">D3/12</span>
+        </div>
+        <div class="big-stat" id="diskPct">50%</div>
+        <div class="bar-wrap"><div class="bar-fill" id="diskBar" style="width:50%;background:linear-gradient(90deg,#22c55e,#14b8a6)"></div></div>
+        <div class="kv-row"><span>Storage Internal (/data)</span><strong id="diskDetail">1.9G / 4.0G (Sisa 1.9G)</strong></div>
+        <div class="kv-row"><span>IP Lokal (WLAN0)</span><strong id="lanIp">192.168.1.11</strong></div>
+        <div class="kv-row"><span>IP Tailscale (TUN1)</span><strong id="tsIp" style="color:#38bdf8">100.116.96.29</strong></div>
+        <div class="kv-row"><span>Sinyal Wi-Fi & Speed</span><strong id="wifiInfo">-58 dBm • 400Mbps</strong></div>
+        <div class="kv-row"><span>Live Traffic</span><strong id="netSpeed">⬇ 0 KB/s • ⬆ 0 KB/s</strong></div>
+        <div class="kv-row"><span>Domain Publik</span><strong><a id="pubUrlLink" href="#" target="_blank" style="color:#22c55e;text-decoration:none;">Memuat...</a></strong></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-head">
+          <h3>📶 Kontrol & Ganti Koneksi Wi-Fi</h3>
+          <button class="btn" style="padding:5px 11px;font-size:12px" onclick="scanWifi(true)">🔍 Scan Wi-Fi</button>
+        </div>
+
+        <div class="input-group">
+          <label>Nama Wi-Fi (SSID) — Klik daftar di bawah atau ketik manual</label>
+          <input type="text" id="wfSsid" class="input-box" placeholder="Contoh: WiFi_Kantor">
+        </div>
+        <div class="input-group" style="display:grid;grid-template-columns:2fr 1fr;gap:8px;">
+          <div>
+            <label>Password Wi-Fi</label>
+            <input type="password" id="wfPass" class="input-box" placeholder="Masukkan password Wi-Fi">
+          </div>
+          <div>
+            <label>Keamanan</label>
+            <select id="wfSec" class="input-box">
+              <option value="wpa2">WPA2/WPA3</option>
+              <option value="wpa3">WPA3 Only</option>
+              <option value="open">Open (Tanpa Pass)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="btn btn-primary" style="flex:1" onclick="connectWifi()">🔗 Sambungkan / Simpan Wi-Fi</button>
+          <button class="btn" style="padding:10px 12px" onclick="const p=document.getElementById('wfPass');p.type=p.type==='password'?'text':'password'">👁️</button>
+        </div>
+
+        <div style="font-size:12px;color:#94a3b8;font-weight:600;margin-bottom:4px;">Wi-Fi Terdeteksi di Sekitar STB (Klik untuk pilih):</div>
+        <div class="wifi-list" id="wifiScanList">
+          <div style="font-size:12px;color:#64748b;padding:8px;">Memuat daftar Wi-Fi...</div>
+        </div>
+
+        <div style="font-size:12px;color:#94a3b8;font-weight:600;margin:12px 0 4px;">Wi-Fi Tersimpan di STB:</div>
+        <div class="wifi-list" id="wifiSavedList" style="max-height:110px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>⚙️ Kontrol Service & Server</h3>
+          <span class="badge">Auto-Boot Active</span>
+        </div>
+        <div class="svc-row">
+          <div class="svc-info"><span class="dot" id="dotNodered"></span><span>Node-RED Smart Home (:1880)</span></div>
+          <button class="btn" style="padding:6px 12px;font-size:12px" onclick="doAction('restart_smarthome')">Restart</button>
+        </div>
+        <div class="svc-row">
+          <div class="svc-info"><span class="dot" id="dotMosquitto"></span><span>Mosquitto MQTT Broker (:1883)</span></div>
+          <button class="btn" style="padding:6px 12px;font-size:12px" onclick="doAction('restart_smarthome')">Restart</button>
+        </div>
+        <div class="svc-row">
+          <div class="svc-info"><span class="dot" id="dotTailscale"></span><span>Tailscale Mesh VPN</span></div>
+          <button class="btn" style="padding:6px 12px;font-size:12px" onclick="doAction('wake_tailscale')">Reconnect</button>
+        </div>
+        <div class="svc-row" style="margin-bottom:14px">
+          <div class="svc-info"><span class="dot" id="dotSshd"></span><span>OpenSSH Server (:8022)</span></div>
+          <span style="font-size:12px;color:#94a3b8">Always On</span>
+        </div>
+        <div class="action-grid">
+          <button class="btn" onclick="doAction('start_smarthome')">▶️ Start SmartHome</button>
+          <button class="btn btn-danger" onclick="doAction('stop_smarthome')">⏹️ Stop SmartHome</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>📺 Layar STB & Remote Virtual</h3>
+          <button class="btn" style="padding:6px 12px;font-size:12px" onclick="refreshScreen()">📸 Ambil Layar STB</button>
+        </div>
+        <img id="screenPreview" class="screen-img" src="https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?key=27042002" alt="Klik Ambil Layar STB">
+        <div class="remote-box">
+          <button class="btn" onclick="sendKey('KEYCODE_BACK')">⬅️ Back</button>
+          <button class="btn" onclick="sendKey('KEYCODE_DPAD_UP')">🔼</button>
+          <button class="btn" onclick="sendKey('KEYCODE_HOME')">🏠 Home</button>
+          <button class="btn" onclick="sendKey('KEYCODE_DPAD_LEFT')">◀️</button>
+          <button class="btn btn-primary" onclick="sendKey('KEYCODE_DPAD_CENTER')">OK</button>
+          <button class="btn" onclick="sendKey('KEYCODE_DPAD_RIGHT')">▶️</button>
+          <button class="btn" onclick="sendKey('KEYCODE_VOLUME_DOWN')">🔉 Vol-</button>
+          <button class="btn" onclick="sendKey('KEYCODE_DPAD_DOWN')">🔽</button>
+          <button class="btn" onclick="sendKey('KEYCODE_VOLUME_UP')">🔊 Vol+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
-    const TARGET_URL = "https://thank-avi-split-incurred.trycloudflare.com/?key=27042002";
-    const TOKEN_KEY = "stb_gh_auth_v3_" + window.location.pathname;
-    const SESSION_TIMEOUT_MS = 20 * 60 * 1000; // 20 menit
-
-    function isSessionValid() {
+    const GH_AUTH_KEY = 'stb_native_mon_auth_v4';
+    const GH_TIMEOUT = 20 * 60 * 1000;
+    function ghCheck() {
       try {
-        const raw = localStorage.getItem(TOKEN_KEY);
-        if (!raw) return false;
-        const data = JSON.parse(raw);
-        if (data && data.exp && Date.now() < data.exp) {
-          return true;
-        }
+        const d = JSON.parse(localStorage.getItem(GH_AUTH_KEY) || '{}');
+        if (d.exp && Date.now() < d.exp) return true;
       } catch (e) {}
-      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(GH_AUTH_KEY);
       return false;
     }
-
-    function lockApp() {
-      localStorage.removeItem(TOKEN_KEY);
-      const frame = document.getElementById("appFrame");
-      frame.src = "about:blank";
-      frame.style.display = "none";
-      document.getElementById("loginOverlay").style.display = "flex";
+    function ghUnlock() {
+      document.getElementById('ghLoginOverlay').style.display = 'none';
     }
-
-    function unlockApp() {
-      document.getElementById("loginOverlay").style.display = "none";
-      const frame = document.getElementById("appFrame");
-      frame.style.display = "block";
-      frame.src = TARGET_URL;
+    function ghLogout() {
+      localStorage.removeItem(GH_AUTH_KEY);
+      document.getElementById('ghLoginOverlay').style.display = 'flex';
     }
-
-    function doAuth(e) {
+    function ghDoLogin(e) {
       e.preventDefault();
-      const u = document.getElementById("u").value.trim();
-      const p = document.getElementById("p").value;
-      if (u === "admin" && p === "27042002") {
-        localStorage.setItem(TOKEN_KEY, JSON.stringify({ exp: Date.now() + SESSION_TIMEOUT_MS }));
-        unlockApp();
+      if (document.getElementById('ghU').value.trim() === 'admin' && document.getElementById('ghP').value === '27042002') {
+        localStorage.setItem(GH_AUTH_KEY, JSON.stringify({ exp: Date.now() + GH_TIMEOUT }));
+        ghUnlock();
       } else {
-        document.getElementById("errMsg").style.display = "block";
+        document.getElementById('ghErr').style.display = 'block';
+      }
+    }
+    if (ghCheck()) ghUnlock();
+    setInterval(() => { if (!ghCheck()) ghLogout(); }, 10000);
+  
+    document.getElementById('backSmartHome').href = 'https://vigokk.github.io/smarthome/';
+
+    function toggleRamFlip() { document.getElementById('ramFlipScene').classList.toggle('flipped'); }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    async function fetchStats() {
+      try {
+        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/stats');
+        if (r.status === 401) { window.location.reload(); return; }
+        const d = await r.json();
+        document.getElementById('subHeader').textContent = 'Realtek RTD1310 (ARMv7 Quad-Core) • ' + d.time;
+        document.getElementById('cpuFreq').textContent = d.cpu.freqMhz + ' MHz';
+        document.getElementById('cpuTotal').textContent = d.cpu.cpu + '%';
+        document.getElementById('cpuBar').style.width = d.cpu.cpu + '%';
+        document.getElementById('loadAvg').textContent = d.cpu.loadAvg;
+        ['0','1','2','3'].forEach(i => {
+          const val = d.cpu['cpu' + i] || 0;
+          document.getElementById('c' + i).textContent = val + '%';
+          document.getElementById('c' + i + 'Bar').style.width = val + '%';
+        });
+
+        document.getElementById('ramAvail').textContent = d.ram.avail + ' MB Available';
+        document.getElementById('ramPct').textContent = d.ram.pct + '%';
+        document.getElementById('ramBar').style.width = d.ram.pct + '%';
+        document.getElementById('ramDetail').textContent = (d.ram.total - d.ram.avail) + ' / ' + d.ram.total + ' MB';
+        document.getElementById('ramCache').textContent = d.ram.cached + ' MB';
+        document.getElementById('swapDetail').textContent = d.swap.used + ' / ' + d.swap.total + ' MB (' + d.swap.pct + '%)';
+        document.getElementById('uptime').textContent = d.uptime;
+        if (d.procs && d.procs.length) {
+          const pl = document.getElementById('procList');
+          pl.innerHTML = '';
+          d.procs.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'proc-row';
+            const left = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'proc-name';
+            title.title = p.name;
+            title.textContent = p.name;
+            const sub = document.createElement('div');
+            sub.className = 'proc-sub';
+            sub.textContent = 'PID ' + p.pid + ' • CPU ' + p.cpuPct + '%';
+            left.appendChild(title);
+            left.appendChild(sub);
+
+            const right = document.createElement('div');
+            right.className = 'proc-mem';
+            right.innerHTML = p.rssMb + ' MB<div class="proc-sub" style="text-align:right">' + p.memPct + '% RAM</div>';
+
+            row.appendChild(left);
+            row.appendChild(right);
+            pl.appendChild(row);
+          });
+        }
+
+        document.getElementById('diskPct').textContent = d.disk.pct + '%';
+        document.getElementById('diskBar').style.width = d.disk.pct + '%';
+        document.getElementById('diskDetail').textContent = d.disk.used + ' / ' + d.disk.size + ' (Kosong ' + d.disk.avail + ')';
+        document.getElementById('wifiSsid').textContent = 'Wi-Fi: ' + d.wifi.ssid;
+        document.getElementById('lanIp').textContent = d.wifi.lanIp;
+        document.getElementById('tsIp').textContent = d.wifi.tsIp;
+        document.getElementById('wifiInfo').textContent = d.wifi.rssi + ' • ' + d.wifi.speed;
+        document.getElementById('netSpeed').textContent = '⬇ ' + d.net.rxKbps + ' KB/s • ⬆ ' + d.net.txKbps + ' KB/s';
+        const pl = document.getElementById('pubUrlLink');
+        pl.href = 'https://vigokk.github.io/stb-monitoring/';
+        pl.textContent = 'vigokk.github.io/stb-monitoring';
+        if (window.location.hostname.endsWith('trycloudflare.com')) {
+          const b = document.getElementById('backSmartHome');
+          b.href = 'https://vigokk.github.io/smarthome/';
+          b.target = '_top';
+        }
+
+        document.getElementById('dotNodered').className = 'dot ' + (d.services.nodered ? '' : 'off');
+        document.getElementById('dotMosquitto').className = 'dot ' + (d.services.mosquitto ? '' : 'off');
+        document.getElementById('dotTailscale').className = 'dot ' + (d.services.tailscale ? '' : 'off');
+        document.getElementById('dotSshd').className = 'dot ' + (d.services.sshd ? '' : 'off');
+      } catch (e) {}
+    }
+
+    async function scanWifi(activeScan) {
+      if (activeScan) showToast('🔍 Memindai jaringan Wi-Fi di sekitar STB...');
+      try {
+        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi?scan=' + (activeScan ? '1' : '0'));
+        const d = await r.json();
+        const scanEl = document.getElementById('wifiScanList');
+        scanEl.innerHTML = '';
+        if (!d.scanned || d.scanned.length === 0) {
+          scanEl.innerHTML = '<div style="font-size:12px;color:#64748b;padding:8px;">Tidak ada Wi-Fi ditemukan. Klik Scan Wi-Fi.</div>';
+        } else {
+          d.scanned.forEach(w => {
+            const div = document.createElement('div');
+            div.className = 'wifi-item';
+            div.onclick = () => {
+              document.getElementById('wfSsid').value = w.ssid;
+              document.getElementById('wfSec').value = w.security;
+              document.getElementById('wfPass').focus();
+            };
+            div.innerHTML = '<div><strong>📶 ' + w.ssid + '</strong> <span style="color:#38bdf8;font-size:11px;margin-left:6px;">' + w.band + '</span></div>' +
+                            '<div style="color:#94a3b8">' + w.rssi + ' dBm • ' + w.security.toUpperCase() + '</div>';
+            scanEl.appendChild(div);
+          });
+        }
+
+        const savedEl = document.getElementById('wifiSavedList');
+        savedEl.innerHTML = '';
+        (d.saved || []).forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'wifi-item';
+          div.style.cursor = 'default';
+          const left = document.createElement('div');
+          left.innerHTML = '<strong>✅ ' + s.ssid + '</strong> <span style="color:#64748b">(' + s.security + ')</span>';
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-danger';
+          btn.style.padding = '3px 9px';
+          btn.style.fontSize = '11px';
+          btn.textContent = '🗑️ Hapus';
+          btn.onclick = () => forgetWifi(s.id, s.ssid);
+          div.appendChild(left);
+          div.appendChild(btn);
+          savedEl.appendChild(div);
+        });
+      } catch (e) {}
+    }
+
+    async function connectWifi() {
+      const ssid = document.getElementById('wfSsid').value.trim();
+      const password = document.getElementById('wfPass').value;
+      const security = document.getElementById('wfSec').value;
+      if (!ssid) return alert('Masukkan Nama Wi-Fi (SSID) terlebih dahulu!');
+      if (security !== 'open' && !password) return alert('Masukkan Password Wi-Fi!');
+      if (!confirm('Sambungkan STB ke Wi-Fi "' + ssid + '" sekarang?')) return;
+
+      showToast('🔗 Menyambungkan STB ke Wi-Fi ' + ssid + '...');
+      try {
+        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ssid, password, security })
+        });
+        const d = await r.json();
+        showToast(d.message || 'Berhasil dikirim!');
+        setTimeout(() => { scanWifi(false); fetchStats(); }, 4000);
+      } catch (e) {
+        showToast('STB sedang berpindah koneksi Wi-Fi...');
       }
     }
 
-    window.addEventListener("message", function(ev) {
-      if (ev.data === "stb_logout") {
-        lockApp();
-      } else if (ev.data && ev.data.navigate) {
-        window.top.location.href = ev.data.navigate;
-      }
-    });
-
-    if (isSessionValid()) {
-      unlockApp();
+    async function forgetWifi(netId, ssid) {
+      if (!confirm('Hapus Wi-Fi tersimpan "' + ssid + '" dari STB?')) return;
+      showToast('Menghapus Wi-Fi ' + ssid + '...');
+      await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/forget', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ netId })
+      });
+      scanWifi(false);
     }
 
-    setInterval(function() {
-      if (document.getElementById("loginOverlay").style.display === "none" && !isSessionValid()) {
-        lockApp();
+    async function doAction(act) {
+      showToast('Menjalankan: ' + act + '...');
+      try {
+        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
+        const d = await r.json();
+        showToast(d.message || 'Selesai!');
+        setTimeout(fetchStats, 1200);
+      } catch (e) {
+        showToast('Perintah dikirim.');
       }
-    }, 10000);
+    }
+
+    async function sendKey(k) {
+      await doAction('key_' + k);
+      setTimeout(refreshScreen, 800);
+    }
+
+    function refreshScreen() {
+      document.getElementById('screenPreview').src = 'https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?key=27042002&t=' + Date.now();
+    }
+
+    fetchStats();
+    scanWifi(false);
+    setInterval(fetchStats, 3500);
   </script>
 </body>
 </html>
