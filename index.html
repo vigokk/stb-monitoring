@@ -350,7 +350,7 @@
 
     <div class="sb-section">Akses PC Saya</div>
     <button class="sb-group-btn" onclick="document.getElementById('pcSub').classList.toggle('open')">
-      <span>💻 PC Windows (HP)</span><span>▾</span>
+      <span style="display:flex;align-items:center;gap:8px;">💻 PC Windows (HP) <span class="dot off" id="pcDot" style="width:8px;height:8px;"></span><small id="pcStatusTxt" style="font-size:11px;color:#94a3b8;">...</small></span><span>▾</span>
     </button>
     <div class="sb-sub open" id="pcSub">
       <a href="https://remotedesktop.google.com/access" target="_blank" rel="noopener" class="sb-item">🖱️ Remote Desktop</a>
@@ -671,6 +671,7 @@
         document.getElementById('dotMosquitto').className = 'dot ' + (d.services.mosquitto ? '' : 'off');
         document.getElementById('dotTailscale').className = 'dot ' + (d.services.tailscale ? '' : 'off');
         document.getElementById('dotSshd').className = 'dot ' + (d.services.sshd ? '' : 'off');
+        updatePcBadge(!!d.pcOnline);
       } catch (e) {}
     }
 
@@ -753,12 +754,47 @@
       scanWifi(false);
     }
 
+    function updatePcBadge(online) {
+      const dot = document.getElementById('pcDot');
+      const txt = document.getElementById('pcStatusTxt');
+      if (dot) dot.className = 'dot ' + (online ? '' : 'off');
+      if (txt) {
+        txt.textContent = online ? 'Online' : 'Offline';
+        txt.style.color = online ? '#22c55e' : '#f87171';
+      }
+    }
+
+    function watchPcShutdown() {
+      let tries = 0;
+      const timer = setInterval(async () => {
+        tries++;
+        try {
+          const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/pc-status');
+          const d = await r.json();
+          updatePcBadge(!!d.online);
+          if (!d.online) {
+            clearInterval(timer);
+            showToast('✅ PC sudah berhasil mati (Offline).');
+            alert('✅ PC sudah berhasil mati (Offline).');
+            return;
+          }
+        } catch (e) {}
+        if (tries >= 25) {
+          clearInterval(timer);
+          showToast('⚠️ PC masih terdeteksi Online setelah 75 detik.');
+        }
+      }, 3000);
+    }
+
     async function doAction(act) {
       showToast('Menjalankan: ' + act + '...');
       try {
         const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
         const d = await r.json();
         showToast(d.message || 'Selesai!');
+        if (act === 'shutdown_pc' && d.message && d.message.includes('15 detik')) {
+          watchPcShutdown();
+        }
         setTimeout(fetchStats, 1200);
       } catch (e) {
         showToast('Perintah dikirim.');
