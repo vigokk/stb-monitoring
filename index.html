@@ -322,17 +322,17 @@
 </head>
 <body>
   <div id="ghLoginOverlay" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right,#1e293b 0%,#0b1120 70%);">
-    <form style="width:100%;max-width:390px;background:rgba(30,41,59,0.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(56,189,248,0.3);border-radius:24px;padding:30px 24px;box-shadow:0 20px 50px rgba(0,0,0,0.55);" onsubmit="ghDoLogin(event)">
+    <form method="post" action="#" style="width:100%;max-width:390px;background:rgba(30,41,59,0.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(56,189,248,0.3);border-radius:24px;padding:30px 24px;box-shadow:0 20px 50px rgba(0,0,0,0.55);" onsubmit="ghDoLogin(event)">
       <h1 style="margin:0 0 6px;font-size:21px;font-weight:700;text-align:center;background:linear-gradient(90deg,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🔒 STB X1 Lite • Monitor</h1>
       <p style="margin:0 0 22px;font-size:13px;color:#94a3b8;text-align:center;">Masukkan Username &amp; Password (20m)</p>
       <div id="ghErr" style="color:#f87171;font-size:12px;text-align:center;margin-bottom:12px;display:none;">Username atau Password salah!</div>
       <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Username</label>
-        <input type="text" id="ghU" placeholder="admin" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
+        <label for="ghU" style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Username</label>
+        <input type="text" id="ghU" name="username" autocomplete="username" placeholder="admin" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
       </div>
       <div style="margin-bottom:18px;">
-        <label style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Password</label>
-        <input type="password" id="ghP" placeholder="••••••••" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
+        <label for="ghP" style="display:block;font-size:12px;color:#cbd5e1;margin-bottom:6px;font-weight:600;">Password</label>
+        <input type="password" id="ghP" name="password" autocomplete="current-password" placeholder="••••••••" required style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(15,23,42,0.9);color:#fff;font-size:16px;outline:none;">
       </div>
       <button type="submit" style="width:100%;padding:13px;border-radius:12px;border:1px solid #38bdf8;background:linear-gradient(135deg,#0284c7,#4f46e5);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(56,189,248,0.3);">Masuk &rarr;</button>
     </form>
@@ -605,7 +605,6 @@
         const d = await r.json();
         if (d.ok && d.token) {
           localStorage.setItem(GH_AUTH_KEY, JSON.stringify({ token: d.token, exp: d.exp }));
-          document.getElementById('ghP').value = '';
           ghUnlock();
         } else {
           errEl.textContent = d.error || 'Username atau Password salah!';
