@@ -573,6 +573,7 @@
       document.getElementById('ghLoginOverlay').style.display = 'none';
       if (typeof fetchStats === 'function') fetchStats();
       if (typeof scanWifi === 'function') scanWifi(false);
+      if (typeof refreshScreen === 'function') refreshScreen();
     }
 
     function ghLock() {
@@ -845,7 +846,7 @@
     }
 
     function refreshScreen() {
-      authFetch('${apiBase}/api/screenshot?t=' + Date.now()).then(r => r.ok ? r.blob() : null).then(b => { if (b) document.getElementById('screenPreview').src = URL.createObjectURL(b); });
+      authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?t=' + Date.now()).then(r => r.ok ? r.blob() : null).then(b => { if (b) document.getElementById('screenPreview').src = URL.createObjectURL(b); });
     }
 
     fetchStats();
