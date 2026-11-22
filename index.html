@@ -641,7 +641,7 @@
     async function fetchStats() {
       try {
         const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/stats');
-        if (r.status === 401) { window.location.reload(); return; }
+        if (r.status === 401) return;
         const d = await r.json();
         document.getElementById('subHeader').textContent = 'Realtek RTD1310 (ARMv7 Quad-Core) • ' + d.time;
         document.getElementById('cpuFreq').textContent = d.cpu.freqMhz + ' MHz';
