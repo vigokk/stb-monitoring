@@ -526,7 +526,7 @@
           <h3>📺 Layar STB & Remote Virtual</h3>
           <button class="btn" style="padding:6px 12px;font-size:12px" onclick="refreshScreen()">📸 Ambil Layar STB</button>
         </div>
-        <img id="screenPreview" class="screen-img" src="https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?key=27042002" alt="Klik Ambil Layar STB">
+        <img id="screenPreview" class="screen-img" src="" alt="Klik Ambil Layar STB">
         <div class="remote-box">
           <button class="btn" onclick="sendKey('KEYCODE_BACK')">⬅️ Back</button>
           <button class="btn" onclick="sendKey('KEYCODE_DPAD_UP')">🔼</button>
@@ -545,41 +545,79 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const GH_AUTH_KEY = 'stb_sso_auth_v5';
-    const GH_TIMEOUT = 20 * 60 * 1000;
-    function ghCheck() {
+    const API_BASE = 'https://thank-avi-split-incurred.trycloudflare.com';
+    const GH_AUTH_KEY = 'stb_sso_token_v6';
+
+    function getAuthToken() {
       try {
         const d = JSON.parse(localStorage.getItem(GH_AUTH_KEY) || '{}');
-        if (d.exp && Date.now() < d.exp) return true;
+        if (d.token && d.exp && Date.now() < d.exp) return d.token;
       } catch (e) {}
       localStorage.removeItem(GH_AUTH_KEY);
-      return false;
+      return '';
     }
+
+    async function authFetch(url, opts = {}) {
+      const tok = getAuthToken();
+      if (!tok) {
+        ghLock();
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      }
+      const headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok });
+      const r = await fetch(url, Object.assign({}, opts, { headers }));
+      if (r.status === 401) ghLock();
+      return r;
+    }
+
     function ghUnlock() {
       document.getElementById('ghLoginOverlay').style.display = 'none';
+      if (typeof fetchStats === 'function') fetchStats();
+      if (typeof scanWifi === 'function') scanWifi(false);
     }
-    function ghLogout() {
+
+    function ghLock() {
       localStorage.removeItem(GH_AUTH_KEY);
       document.getElementById('ghLoginOverlay').style.display = 'flex';
     }
-    function toggleSidebar(force) {
-      const sb = document.getElementById('sidebar');
-      const bd = document.getElementById('sbBackdrop');
-      const open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
-      sb.classList.toggle('open', open);
-      bd.classList.toggle('open', open);
+
+    async function ghLogout() {
+      const tok = getAuthToken();
+      if (tok) {
+        fetch(API_BASE + '/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + tok } }).catch(() => {});
+      }
+      ghLock();
     }
-    function ghDoLogin(e) {
+
+    async function ghDoLogin(e) {
       e.preventDefault();
-      if (document.getElementById('ghU').value.trim() === 'admin' && document.getElementById('ghP').value === '27042002') {
-        localStorage.setItem(GH_AUTH_KEY, JSON.stringify({ exp: Date.now() + GH_TIMEOUT }));
-        ghUnlock();
-      } else {
-        document.getElementById('ghErr').style.display = 'block';
+      const errEl = document.getElementById('ghErr');
+      errEl.style.display = 'none';
+      try {
+        const r = await fetch(API_BASE + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('ghU').value.trim(),
+            password: document.getElementById('ghP').value
+          })
+        });
+        const d = await r.json();
+        if (d.ok && d.token) {
+          localStorage.setItem(GH_AUTH_KEY, JSON.stringify({ token: d.token, exp: d.exp }));
+          document.getElementById('ghP').value = '';
+          ghUnlock();
+        } else {
+          errEl.textContent = d.error || 'Username atau Password salah!';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Gagal menghubungi server STB.';
+        errEl.style.display = 'block';
       }
     }
-    if (ghCheck()) ghUnlock();
-    setInterval(() => { if (!ghCheck()) ghLogout(); }, 10000);
+
+    if (getAuthToken()) ghUnlock();
+    setInterval(() => { if (!getAuthToken()) ghLock(); }, 10000);
   
     document.getElementById('backSmartHome').href = 'https://vigokk.github.io/smarthome/';
 
@@ -602,7 +640,7 @@
 
     async function fetchStats() {
       try {
-        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/stats');
+        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/stats');
         if (r.status === 401) { window.location.reload(); return; }
         const d = await r.json();
         document.getElementById('subHeader').textContent = 'Realtek RTD1310 (ARMv7 Quad-Core) • ' + d.time;
@@ -678,7 +716,7 @@
     async function scanWifi(activeScan) {
       if (activeScan) showToast('🔍 Memindai jaringan Wi-Fi di sekitar STB...');
       try {
-        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi?scan=' + (activeScan ? '1' : '0'));
+        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi?scan=' + (activeScan ? '1' : '0'));
         const d = await r.json();
         const scanEl = document.getElementById('wifiScanList');
         scanEl.innerHTML = '';
@@ -730,7 +768,7 @@
 
       showToast('🔗 Menyambungkan STB ke Wi-Fi ' + ssid + '...');
       try {
-        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/connect', {
+        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/connect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ssid, password, security })
@@ -746,7 +784,7 @@
     async function forgetWifi(netId, ssid) {
       if (!confirm('Hapus Wi-Fi tersimpan "' + ssid + '" dari STB?')) return;
       showToast('Menghapus Wi-Fi ' + ssid + '...');
-      await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/forget', {
+      await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/forget', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ netId })
@@ -769,7 +807,7 @@
       const timer = setInterval(async () => {
         tries++;
         try {
-          const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/pc-status');
+          const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/pc-status');
           const d = await r.json();
           updatePcBadge(!!d.online);
           if (!d.online) {
@@ -789,7 +827,7 @@
     async function doAction(act) {
       showToast('Menjalankan: ' + act + '...');
       try {
-        const r = await fetch('https://thank-avi-split-incurred.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
+        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
         const d = await r.json();
         showToast(d.message || 'Selesai!');
         if (act === 'shutdown_pc' && d.message && d.message.includes('15 detik')) {
@@ -807,7 +845,7 @@
     }
 
     function refreshScreen() {
-      document.getElementById('screenPreview').src = 'https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?key=27042002&t=' + Date.now();
+      authFetch('${apiBase}/api/screenshot?t=' + Date.now()).then(r => r.ok ? r.blob() : null).then(b => { if (b) document.getElementById('screenPreview').src = URL.createObjectURL(b); });
     }
 
     fetchStats();
