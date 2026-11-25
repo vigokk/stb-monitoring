@@ -548,7 +548,7 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const API_BASE = 'https://thank-avi-split-incurred.trycloudflare.com';
+    const API_BASE = 'https://principal-radius-seems-rna.trycloudflare.com';
     const GH_AUTH_KEY = 'stb_sso_token_v6';
 
     function getAuthToken() {
@@ -644,7 +644,7 @@
 
     async function fetchStats() {
       try {
-        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/stats');
+        const r = await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/stats');
         if (r.status === 401) return;
         const d = await r.json();
         document.getElementById('subHeader').textContent = 'Realtek RTD1310 (ARMv7 Quad-Core) • ' + d.time;
@@ -720,7 +720,7 @@
     async function scanWifi(activeScan) {
       if (activeScan) showToast('🔍 Memindai jaringan Wi-Fi di sekitar STB...');
       try {
-        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi?scan=' + (activeScan ? '1' : '0'));
+        const r = await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/wifi?scan=' + (activeScan ? '1' : '0'));
         const d = await r.json();
         const scanEl = document.getElementById('wifiScanList');
         scanEl.innerHTML = '';
@@ -772,7 +772,7 @@
 
       showToast('🔗 Menyambungkan STB ke Wi-Fi ' + ssid + '...');
       try {
-        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/connect', {
+        const r = await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/wifi/connect', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ssid, password, security })
@@ -788,7 +788,7 @@
     async function forgetWifi(netId, ssid) {
       if (!confirm('Hapus Wi-Fi tersimpan "' + ssid + '" dari STB?')) return;
       showToast('Menghapus Wi-Fi ' + ssid + '...');
-      await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/wifi/forget', {
+      await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/wifi/forget', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ netId })
@@ -811,7 +811,7 @@
       const timer = setInterval(async () => {
         tries++;
         try {
-          const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/pc-status');
+          const r = await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/pc-status');
           const d = await r.json();
           updatePcBadge(!!d.online);
           if (!d.online) {
@@ -831,7 +831,7 @@
     async function doAction(act) {
       showToast('Menjalankan: ' + act + '...');
       try {
-        const r = await authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
+        const r = await authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/action?cmd=' + encodeURIComponent(act), { method: 'POST' });
         const d = await r.json();
         showToast(d.message || 'Selesai!');
         if (act === 'shutdown_pc' && d.message && d.message.includes('15 detik')) {
@@ -849,7 +849,7 @@
     }
 
     function refreshScreen() {
-      authFetch('https://thank-avi-split-incurred.trycloudflare.com/api/screenshot?t=' + Date.now()).then(r => r.ok ? r.blob() : null).then(b => { if (b) document.getElementById('screenPreview').src = URL.createObjectURL(b); });
+      authFetch('https://principal-radius-seems-rna.trycloudflare.com/api/screenshot?t=' + Date.now()).then(r => r.ok ? r.blob() : null).then(b => { if (b) document.getElementById('screenPreview').src = URL.createObjectURL(b); });
     }
 
     fetchStats();
